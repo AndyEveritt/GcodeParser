@@ -20,21 +20,30 @@ class GcodeLine:
         else:
             self.type = Commands.OTHER
 
+    def get_param(self, param, return_type=None, default=None):
+        try:
+            if return_type is None:
+                return self.params[param]
+            else:
+                return return_type(self.params[param])
+        except KeyError:
+            return default
+
 
 class GcodeParser:
-    def __init__(self, gcode, include_comments=False):
-        self.lines: List[GcodeLine] = get_lines(gcode, include_comments)
+    def __init__(self, gcode: str, include_comments=False):
         self.gcode = gcode
+        self.lines: List[GcodeLine] = get_lines(self.gcode, include_comments)
         self.include_comments = include_comments
 
 
 def get_lines(gcode, include_comments=False):
-    regex = r'(?!; *.+)(G|M|T)(\d+)(( *(?!G|M)\w-?\d+\.?\d*)*) *\t*(; *(.*))?|; *(.+)'
+    regex = r'(?!; *.+)(G|M|T|g|m|t)(\d+)(( *(?!G|M|g|m)\w-?\d+\.?\d*)*) *\t*(; *(.*))?|; *(.+)'
     regex_lines = re.findall(regex, gcode)
     lines = []
     for line in regex_lines:
         if line[0]:
-            command = (line[0], int(line[1]))
+            command = (line[0].upper(), int(line[1]))
             comment = line[5]
             params = split_params(line[2])
 
@@ -61,11 +70,13 @@ def split_params(line):
     elements = re.findall(regex, line)
     params = {}
     for element in elements:
-        params[element[0]] = float(element[1])
+        params[element[0].upper()] = float(element[1])
 
     return params
 
 
 if __name__ == '__main__':
-    gcode = GcodeParser('test.gcode')
+    with open('3DBenchy.gcode', 'r') as f:
+        gcode = f.read()
+    parsed_gcode = GcodeParser(gcode)
     pass
