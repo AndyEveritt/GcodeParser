@@ -34,3 +34,28 @@ with open('my_gcode.gcode', 'r') as f:
 
 GcodeParser(gcode).lines    # get parsed gcode lines
 ```
+
+## Include Comments
+
+`GcodeParser` takes a second argument called `include_comments` which defaults to `False`. If this is set to `True` then any line from the gcode file which only contains a comment will also be included in the output.
+
+```py
+gcode = (
+  'G1 X1 ; this comment is always included\n',
+  '; this comment will only be included if `include_comments=True`',
+)
+
+GcodeParser(gcode, include_comments=True).lines
+```
+If `include_comments` is `True` then the comment line will be in the form of:
+```python
+GcodeLine(
+  command = (';', None),
+  params = {},
+  comment = 'this comment will only be included if `include_comments=True`',
+)
+```
+
+## Converting to DataFrames
+
+If for whatever reason you want to convert your list of `GcodeLine` objects into a pandas dataframe, simply use `pd.DataFrame(GcodeParser(gcode).lines)`
