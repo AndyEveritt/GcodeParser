@@ -1,4 +1,4 @@
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Union
 from dataclasses import dataclass
 import re
 from .commands import Commands
@@ -32,6 +32,19 @@ class GcodeLine:
                 return return_type(self.params[param])
         except KeyError:
             return default
+
+    def update_param(self, param: str, value: Union[int, float]):
+        if self.get_param(param) is None:
+            return
+        if type(value) not in (int, float):
+            raise TypeError(f"Type {type(value)} is not a valid parameter type")
+        self.params[param] = value
+        return self.get_param(param)
+
+    def delete_param(self, param: str):
+        if self.get_param(param) is None:
+            return
+        self.params.pop(param)
 
     def to_gcode(self):
         command = f"{self.command[0]}{self.command[1]}"

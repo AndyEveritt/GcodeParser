@@ -100,11 +100,39 @@ _output:_
 
 The `GcodeLine` class has a method `to_gcode()` which will return the equivalent gcode string.
 
-## Retrieving Params
+## Parameters
 
-The `GcodeLine` class has a method `get_param(param: str, return_type=None, default=None)` which
+The `GcodeLine` class has a several helper methods to get and manipulate gcode parameters.
+
+For an example `GcodeLine` `line`:
+
+### Retrieving Params
+
+To retrieve a param, use the method `get_param(param: str, return_type=None, default=None)` which
 returns the value of the param if it exists, otherwise it will the `default` value.
 If `return_type` is set, the return value will be type cast.
+
+```python
+line.get_param('X')
+```
+
+### Updating Params
+
+To update a param, use the method `update_param(param: str, value: int | float)`
+
+```python
+line.update_param('X', 10)
+```
+
+If the param does not exist, it will return `None` else it will return the updated value.
+
+### Deleting Params
+
+To delete a param, use the method `delete_param(param: str)`
+
+```python
+line.delete_param('X')
+```
 
 ## Converting to DataFrames
 
