@@ -20,7 +20,11 @@ class GcodeLine:
         else:
             self.type = Commands.OTHER
 
-    def get_param(self, param, return_type=None, default=None):
+    def get_param(self, param: str, return_type=None, default=None):
+        """
+        Returns the value of the param if it exists, otherwise it will the default value.
+        If `return_type` is set, the return value will be type cast.
+        """
         try:
             if return_type is None:
                 return self.params[param]
@@ -28,6 +32,12 @@ class GcodeLine:
                 return return_type(self.params[param])
         except KeyError:
             return default
+
+    def to_gcode(self):
+        command = f"{self.command[0]}{self.command[1]}"
+        params = " ".join(f"{param}{self.get_param(param)}" for param in self.params.keys())
+        comment = f"; {self.comment}" if self.comment != '' else ""
+        return f"{command} {params} {comment}".strip()
 
 
 class GcodeParser:
@@ -65,12 +75,19 @@ def get_lines(gcode, include_comments=False):
     return lines
 
 
+def is_float(num: str):
+    if re.search(r'[+-]?\d+.\d+', num):
+        return True
+    return False
+
+
 def split_params(line):
     regex = r'((?!\d)\w+?)(-?\d+\.?\d*)'
     elements = re.findall(regex, line)
     params = {}
     for element in elements:
-        params[element[0].upper()] = float(element[1])
+        element_type = float if is_float(element[1]) else int
+        params[element[0].upper()] = element_type(element[1])
 
     return params
 

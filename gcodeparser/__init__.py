@@ -1,4 +1,4 @@
-__version__ = "0.0.2-b0"
+__version__ = "0.0.2"
 
 from .gcode_parser import GcodeParser
 from .commands import Commands
