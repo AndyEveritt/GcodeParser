@@ -61,18 +61,18 @@ class GcodeParser:
 
 
 def get_lines(gcode, include_comments=False):
-    regex = r'(?!; *.+)(G|M|T|g|m|t)(\d+)(( *(?!G|M|g|m)\w-?\d+\.?\d*)*) *\t*(; *(.*))?|; *(.+)'
+    regex = r'(?!; *.+)(G|M|T|g|m|t)(\d+)(( *(?!G|M|g|m)\w(".*"|([-\d\.]*)))*) *\t*(; *(.*))?|; *(.+)'
     regex_lines = re.findall(regex, gcode)
     lines = []
     for line in regex_lines:
         if line[0]:
             command = (line[0].upper(), int(line[1]))
-            comment = line[5]
+            comment = line[-2]
             params = split_params(line[2])
 
         elif include_comments:
             command = (';', None)
-            comment = line[6]
+            comment = line[-1]
             params = {}
 
         else:
@@ -88,19 +88,22 @@ def get_lines(gcode, include_comments=False):
     return lines
 
 
-def is_float(num: str):
-    if re.search(r'[+-]?\d+.\d+', num):
-        return True
-    return False
+def element_type(element: str):
+    if re.search(r'"', element):
+        return str
+    if re.search(r'\..*\.', element):
+        return str
+    if re.search(r'[+-]?\d+.\d+', element):
+        return float
+    return int
 
 
 def split_params(line):
-    regex = r'((?!\d)\w+?)(-?\d+\.?\d*)'
+    regex = r'((?!\d)\w+?)(".*"|(\d+\.?)+|-?\d+\.?\d*)'
     elements = re.findall(regex, line)
     params = {}
     for element in elements:
-        element_type = float if is_float(element[1]) else int
-        params[element[0].upper()] = element_type(element[1])
+        params[element[0].upper()] = element_type(element[1])(element[1])
 
     return params
 
