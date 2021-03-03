@@ -61,7 +61,7 @@ class GcodeParser:
 
 
 def get_lines(gcode, include_comments=False):
-    regex = r'(?!; *.+)(G|M|T|g|m|t)(\d+)(( *(?!G|M|g|m)\w(".*"|([-\d\.]*)))*) *\t*(; *(.*))?|; *(.+)'
+    regex = r'(?!; *.+)(G|M|T|g|m|t)(\d+)(([ \t]*(?!G|M|g|m)\w(".*"|([-\d\.]*)))*)[ \t]*(;[ \t]*(.*))?|;[ \t]*(.+)'
     regex_lines = re.findall(regex, gcode)
     lines = []
     for line in regex_lines:
@@ -93,7 +93,7 @@ def element_type(element: str):
         return str
     if re.search(r'\..*\.', element):
         return str
-    if re.search(r'[+-]?\d+.\d+', element):
+    if re.search(r'[+-]?\d+\.\d+', element):
         return float
     return int
 
