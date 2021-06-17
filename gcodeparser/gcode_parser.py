@@ -11,15 +11,17 @@ class GcodeLine:
     comment: str
 
     def __post_init__(self):
-        if self.command[0] == 'G' and self.command[1] in (0, 1, 2, 3):
+        if self.command[0] == "G" and self.command[1] in (0, 1, 2, 3):
             self.type = Commands.MOVE
-        elif self.command[0] == ';':
+        elif self.command[0] == ";":
             self.type = Commands.COMMENT
-        elif self.command[0] == 'T':
+        elif self.command[0] == "T":
             self.type = Commands.TOOLCHANGE
         else:
             self.type = Commands.OTHER
 
+    def get_command(self):
+        return str(self.command[0]) + str(self.command[1])
     def get_param(self, param: str, return_type=None, default=None):
         """
         Returns the value of the param if it exists, otherwise it will the default value.
@@ -48,8 +50,10 @@ class GcodeLine:
 
     def to_gcode(self):
         command = f"{self.command[0]}{self.command[1]}"
-        params = " ".join(f"{param}{self.get_param(param)}" for param in self.params.keys())
-        comment = f"; {self.comment}" if self.comment != '' else ""
+        params = " ".join(
+            f"{param}{self.get_param(param)}" for param in self.params.keys()
+        )
+        comment = f"; {self.comment}" if self.comment != "" else ""
         return f"{command} {params} {comment}".strip()
 
 
@@ -71,7 +75,7 @@ def get_lines(gcode, include_comments=False):
             params = split_params(line[2])
 
         elif include_comments:
-            command = (';', None)
+            command = (";", None)
             comment = line[-1]
             params = {}
 
@@ -83,7 +87,8 @@ def get_lines(gcode, include_comments=False):
                 command=command,
                 params=params,
                 comment=comment,
-            ))
+            )
+        )
 
     return lines
 
@@ -91,9 +96,9 @@ def get_lines(gcode, include_comments=False):
 def element_type(element: str):
     if re.search(r'"', element):
         return str
-    if re.search(r'\..*\.', element):
+    if re.search(r"\..*\.", element):
         return str
-    if re.search(r'[+-]?\d+\.\d+', element):
+    if re.search(r"[+-]?\d+\.\d+", element):
         return float
     return int
 
@@ -108,8 +113,8 @@ def split_params(line):
     return params
 
 
-if __name__ == '__main__':
-    with open('3DBenchy.gcode', 'r') as f:
+if __name__ == "__main__":
+    with open("3DBenchy.gcode", "r") as f:
         gcode = f.read()
     parsed_gcode = GcodeParser(gcode)
     pass
