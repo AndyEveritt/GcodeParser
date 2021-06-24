@@ -35,10 +35,19 @@ def test_post_init_other():
     assert line.type == Commands.OTHER
 
 
+def test_command_str():
+    line = GcodeLine(
+        command=('G', 91),
+        params={'X': 10, 'Y': 20},
+        comment='this is a comment',
+    )
+    assert line.command_str == 'G91'
+
+
 def test_to_gcode():
     line = GcodeLine(
         command=('G', 91),
         params={'X': 10, 'Y': 20},
         comment='this is a comment',
     )
-    assert line.to_gcode() == 'G91 X10 Y20 ; this is a comment'
+    assert line.gcode_str == 'G91 X10 Y20 ; this is a comment'

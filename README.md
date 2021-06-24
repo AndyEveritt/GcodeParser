@@ -96,9 +96,15 @@ _output:_
 ]
 ```
 
+## Convert Command Tuple to String
+
+The `GcodeLine`class has a property `command_str` which will return the command tuple as a string. ie `('G', 91)` -> `"G91"`.
+
 ## Changing back to Gcode String
 
-The `GcodeLine` class has a method `to_gcode()` which will return the equivalent gcode string.
+The `GcodeLine` class has a property `gcode_str` which will return the equivalent gcode string.
+
+> This was called `to_gcode()` in version 0.0.6 and before.
 
 ## Parameters
 

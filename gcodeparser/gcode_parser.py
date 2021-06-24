@@ -20,6 +20,10 @@ class GcodeLine:
         else:
             self.type = Commands.OTHER
 
+    @property
+    def command_str(self):
+        return f"{self.command[0]}{self.command[1] if self.command[1] is not None else ''}"
+
     def get_param(self, param: str, return_type=None, default=None):
         """
         Returns the value of the param if it exists, otherwise it will the default value.
@@ -46,10 +50,13 @@ class GcodeLine:
             return
         self.params.pop(param)
 
-    def to_gcode(self):
-        command = f"{self.command[0]}{self.command[1]}"
+    @property
+    def gcode_str(self):
+        command = self.command_str
         params = " ".join(f"{param}{self.get_param(param)}" for param in self.params.keys())
         comment = f"; {self.comment}" if self.comment != '' else ""
+        if command == ';':
+            return comment
         return f"{command} {params} {comment}".strip()
 
 
@@ -82,7 +89,7 @@ def get_lines(gcode, include_comments=False):
             GcodeLine(
                 command=command,
                 params=params,
-                comment=comment,
+                comment=comment.strip(),
             ))
 
     return lines
