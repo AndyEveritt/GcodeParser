@@ -16,6 +16,10 @@ def test_split_float_params():
     assert split_params(' P0.1 S1.1345 X10.0') == {'P': 0.1, 'S': 1.1345, 'X': 10.0}
 
 
+def test_split_sub1_params():
+    assert split_params(' P0.00001 S-0.00021 X.0001 Y-.003213') == {'P': 0.00001, 'S': -0.00021, 'X': 0.0001, 'Y': -0.003213}
+
+
 def test_split_string_params():
     assert split_params(' P"string"') == {'P': '"string"'}
 

@@ -100,13 +100,13 @@ def element_type(element: str):
         return str
     if re.search(r'\..*\.', element):
         return str
-    if re.search(r'[+-]?\d+\.\d+', element):
+    if re.search(r'[+-]?\d*\.\d+', element):
         return float
     return int
 
 
 def split_params(line):
-    regex = r'((?!\d)\w+?)(".*"|(\d+\.?)+|-?\d+\.?\d*)'
+    regex = r'((?!\d)\w+?)(".*"|(\d+\.?)+|-?\d*\.?\d*)'
     elements = re.findall(regex, line)
     params = {}
     for element in elements:
