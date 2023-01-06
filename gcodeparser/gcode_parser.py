@@ -110,6 +110,9 @@ def split_params(line):
     elements = re.findall(regex, line)
     params = {}
     for element in elements:
+        if element[1] == '':
+            params[element[0].upper()] = True
+            continue
         params[element[0].upper()] = element_type(element[1])(element[1])
 
     return params
