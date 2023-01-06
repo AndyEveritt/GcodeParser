@@ -42,3 +42,12 @@ def test_split_ip_params():
 
 def test_split_no_space_params():
     assert split_params('P0.1S1.1345X10.0A"string"') == {'P': 0.1, 'S': 1.1345, 'X': 10.0, 'A': '"string"'}
+
+def test_split_no_value_params():
+    assert split_params(' X') == {'X': True}
+
+def test_split_multi_no_value_params():
+    assert split_params(' XYZ') == {'X': True, 'Y': True, 'Z': True}
+
+def test_split_multi_no_value_spaced_params():
+    assert split_params(' X Y Z') == {'X': True, 'Y': True, 'Z': True}
