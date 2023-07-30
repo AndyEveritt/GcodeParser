@@ -53,7 +53,15 @@ class GcodeLine:
     @property
     def gcode_str(self):
         command = self.command_str
-        params = " ".join(f"{param}{self.get_param(param)}" for param in self.params.keys())
+
+        def param_value(param):
+            value = self.get_param(param)
+            is_flag_parameter = value == True
+            if is_flag_parameter:
+                return ""
+            return value
+
+        params = " ".join(f"{param}{param_value(param)}" for param in self.params.keys())
         comment = f"; {self.comment}" if self.comment != '' else ""
         if command == ';':
             return comment
