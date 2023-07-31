@@ -56,7 +56,7 @@ class GcodeLine:
 
         def param_value(param):
             value = self.get_param(param)
-            is_flag_parameter = value == True
+            is_flag_parameter = value is True
             if is_flag_parameter:
                 return ""
             return value
