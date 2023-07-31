@@ -9,7 +9,7 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="gcodeparser",
-    version="0.0.10",
+    version="0.1.1",
     include_package_data=True,
     packages=find_packages(),
 
