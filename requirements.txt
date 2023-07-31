@@ -1,0 +1,4 @@
+pytest
+wheel
+twine
+bump2version

@@ -12,7 +12,7 @@ update_dist:
 	rm dist/* -f
 	python setup.py sdist bdist_wheel
 
-check_dist:
+check_dist: update_dist
 	twine check dist/*
 
 upload_test: check_dist
