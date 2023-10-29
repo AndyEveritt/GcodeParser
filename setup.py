@@ -12,10 +12,7 @@ setup(
     version="0.1.1",
     include_package_data=True,
     packages=find_packages(),
-
-    install_requires=[
-    ],
-
+    install_requires=[],
     author="Andy Everitt",
     author_email="andreweveritt@e3d-online.com",
     description="Python gcode parser",
