@@ -26,6 +26,15 @@ def test_params():
     assert get_lines('G1 X10 Y20')[0] == line
 
 
+def test_params_with_explicit_positive_values():
+    line = GcodeLine(
+        command=('G', 1),
+        params={'X': 10, 'Y': 20},
+        comment='',
+    )
+    assert get_lines('G1 X+10 Y+20')[0] == line
+
+
 def test_2_commands_line():
     line1 = GcodeLine(
         command=('G', 91),
