@@ -31,9 +31,15 @@ def test_split_string_with_semicolon_params():
 def test_split_neg_int_params():
     assert split_params(' P-0 S-1 X-10') == {'P': 0, 'S': -1, 'X': -10}
 
+def test_split_positive_int_params():
+    assert split_params(' P+0 S+1 X+10') == {'P': 0, 'S': 1, 'X': 10}
+
 
 def test_split_neg_float_params():
     assert split_params(' P-0.1 S-1.1345 X-10.0') == {'P': -0.1, 'S': -1.1345, 'X': -10.0}
+
+def test_split_positive_float_params():
+    assert split_params(' P+0.1 S+1.1345 X+10.0') == {'P': 0.1, 'S': 1.1345, 'X': 10.0}
 
 
 def test_split_ip_params():

@@ -114,7 +114,7 @@ def element_type(element: str):
 
 
 def split_params(line):
-    regex = r'((?!\d)\w+?)(".*"|(\d+\.?)+|-?\d*\.?\d*)'
+    regex = r'((?!\d)\w+?)(".*"|(\d+\.?)+|[-+]?\d*\.?\d*)'
     elements = re.findall(regex, line)
     params = {}
     for element in elements:
