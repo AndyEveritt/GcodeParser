@@ -1,4 +1,4 @@
-from typing import List, Dict, Tuple, Union
+from typing import Generator, Dict, Tuple, Union
 from dataclasses import dataclass
 import re
 from .commands import Commands
@@ -11,18 +11,20 @@ class GcodeLine:
     comment: str
 
     def __post_init__(self):
-        if self.command[0] == 'G' and self.command[1] in (0, 1, 2, 3):
+        if self.command[0] == "G" and self.command[1] in (0, 1, 2, 3):
             self.type = Commands.MOVE
-        elif self.command[0] == ';':
+        elif self.command[0] == ";":
             self.type = Commands.COMMENT
-        elif self.command[0] == 'T':
+        elif self.command[0] == "T":
             self.type = Commands.TOOLCHANGE
         else:
             self.type = Commands.OTHER
 
     @property
     def command_str(self):
-        return f"{self.command[0]}{self.command[1] if self.command[1] is not None else ''}"
+        return (
+            f"{self.command[0]}{self.command[1] if self.command[1] is not None else ''}"
+        )
 
     def get_param(self, param: str, return_type=None, default=None):
         """
@@ -61,9 +63,11 @@ class GcodeLine:
                 return ""
             return value
 
-        params = " ".join(f"{param}{param_value(param)}" for param in self.params.keys())
-        comment = f"; {self.comment}" if self.comment != '' else ""
-        if command == ';':
+        params = " ".join(
+            f"{param}{param_value(param)}" for param in self.params.keys()
+        )
+        comment = f"; {self.comment}" if self.comment != "" else ""
+        if command == ";":
             return comment
         return f"{command} {params} {comment}".strip()
 
@@ -71,14 +75,14 @@ class GcodeLine:
 class GcodeParser:
     def __init__(self, gcode: str, include_comments=False):
         self.gcode = gcode
-        self.lines: List[GcodeLine] = get_lines(self.gcode, include_comments)
+        self.lines: Generator[GcodeLine] = get_lines(self.gcode, include_comments)
         self.include_comments = include_comments
 
 
 def get_lines(gcode, include_comments=False):
     regex = r'(?!; *.+)(G|M|T|g|m|t)(\d+)(([ \t]*(?!G|M|g|m)\w(".*"|([-+\d\.]*)))*)[ \t]*(;[ \t]*(.*))?|;[ \t]*(.+)'
     regex_lines = re.findall(regex, gcode)
-    lines = []
+
     for line in regex_lines:
         if line[0]:
             command = (line[0].upper(), int(line[1]))
@@ -86,29 +90,26 @@ def get_lines(gcode, include_comments=False):
             params = split_params(line[2])
 
         elif include_comments:
-            command = (';', None)
+            command = (";", None)
             comment = line[-1]
             params = {}
 
         else:
             continue
 
-        lines.append(
-            GcodeLine(
-                command=command,
-                params=params,
-                comment=comment.strip(),
-            ))
-
-    return lines
+        yield GcodeLine(
+            command=command,
+            params=params,
+            comment=comment.strip(),
+        )
 
 
 def element_type(element: str):
     if re.search(r'"', element):
         return str
-    if re.search(r'\..*\.', element):
+    if re.search(r"\..*\.", element):
         return str
-    if re.search(r'[+-]?\d*\.\d+', element):
+    if re.search(r"[+-]?\d*\.\d+", element):
         return float
     return int
 
@@ -118,7 +119,7 @@ def split_params(line):
     elements = re.findall(regex, line)
     params = {}
     for element in elements:
-        if element[1] == '':
+        if element[1] == "":
             params[element[0].upper()] = True
             continue
         params[element[0].upper()] = element_type(element[1])(element[1])
@@ -126,8 +127,8 @@ def split_params(line):
     return params
 
 
-if __name__ == '__main__':
-    with open('3DBenchy.gcode', 'r') as f:
+if __name__ == "__main__":
+    with open("3DBenchy.gcode", "r") as f:
         gcode = f.read()
     parsed_gcode = GcodeParser(gcode)
     pass
