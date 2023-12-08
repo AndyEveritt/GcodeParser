@@ -13,7 +13,7 @@ on:
     types: [published]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   deploy:
@@ -32,10 +32,18 @@ jobs:
         pip install -r requirements.txt
     - name: Test code
       run: pytest
+    - name: Bumpversion
+      run: bumpversion --new-version=${{ github.ref }} minor
     - name: Clean dist/
       run: rm dist/* -f
     - name: Build package
       run: python setup.py sdist bdist_wheel
+    - name: Commit version change
+      run: |
+          git config --global user.name 'AndyEveritt'
+          git config --global user.email '38423143+AndyEveritt@users.noreply.github.com'
+          git commit -am "Release ${{ github.ref }}"
+          git push
     - name: Publish package
       uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
       with:
