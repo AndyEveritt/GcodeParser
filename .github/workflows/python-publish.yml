@@ -34,7 +34,7 @@ jobs:
     - name: Test code
       run: pytest
     - name: Bumpversion
-      run: bumpversion --new-version=${{ github.ref }} minor
+      run: bumpversion --new-version=${{ github.event.release.name }} minor
     - name: Clean dist/
       run: rm dist/* -f
     - name: Build package
@@ -43,7 +43,7 @@ jobs:
       run: |
           git config --global user.name 'AndyEveritt'
           git config --global user.email '38423143+AndyEveritt@users.noreply.github.com'
-          git commit -am "Release ${{ github.ref }}"
+          git commit -am "Release ${{ github.event.release.name }}"
           git push
     - name: Publish package
       uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
