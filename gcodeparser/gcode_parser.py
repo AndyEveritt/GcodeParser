@@ -6,7 +6,7 @@ from .commands import Commands
 
 @dataclass
 class GcodeLine:
-    command: Tuple[str, int]
+    command: Tuple[str, int] | Tuple[str, None]
     params: Dict[str, float]
     comment: str
 
