@@ -7,7 +7,7 @@ from .commands import Commands
 @dataclass
 class GcodeLine:
     command: Union[Tuple[str, int], Tuple[str, None]]
-    params: Dict[str, float]
+    params: Dict[str, Union[float, str]]
     comment: str
 
     def __post_init__(self):
