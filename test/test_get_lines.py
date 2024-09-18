@@ -129,4 +129,25 @@ def test_multi_line():
     assert get_lines('G91\nG1 X-10 Y20 ; inline comment\nG1 Z0.5\nT1\nM350 T100') == lines
     assert get_lines('G91G1 X-10 Y20;inline comment\nG1 Z0.5\nT1M350 T100') == lines
     assert get_lines(' \tG91\n\tG1\t  X-10 Y20 \t ;\t inline comment\nG1 Z0.5\nT1\nM350 T100') == lines
-    assert get_lines('G91\nG1 X-10 Y20 ; inline comment\n; comment to be excluded\nG1 Z0.5\nT1\nM350 T100', include_comments=False) == lines
+    assert get_lines('G91\nG1 X-10 Y20 ; inline comment\n; comment to be excluded\nG1 Z0.5\nT1\nM350 T100',
+                     include_comments=False) == lines
+    assert get_lines('G91 G1 X-10 Y20 ; inline comment\n; comment to be excluded\nG1 Z0.5\nT1\nM350 T100',
+                     include_comments=False) == lines
+
+
+def test_multi_line2():
+    """ We want to ignore things that look like gcode in the comments
+    """
+    lines = [
+        GcodeLine(
+            command=('G', 91),
+            params={},
+            comment='',
+        ),
+        GcodeLine(
+            command=('G', 1),
+            params={'X': 100},
+            comment='comment G90'
+        )
+    ]
+    assert get_lines('G91 G1 X100 ; comment G90') == lines
