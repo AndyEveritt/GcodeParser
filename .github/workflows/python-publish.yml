@@ -39,6 +39,8 @@ jobs:
       run: rm dist/* -f
     - name: Build package
       run: python setup.py sdist bdist_wheel
+    - name: Check package
+      run: python -m twine check dist/*
     - name: Commit version change
       run: |
           git config --global user.name 'Github Actions'
@@ -48,7 +50,7 @@ jobs:
           git push origin HEAD:master
           git push origin -f --tags
     - name: Publish package
-      uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
+      uses: pypa/gh-action-pypi-publish@0ab0b79471669eb3a4d647e625009c62f9f3b241
       with:
         user: __token__
         password: ${{ secrets.PYPI_API_TOKEN }}

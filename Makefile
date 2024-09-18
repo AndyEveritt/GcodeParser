@@ -8,15 +8,15 @@ verbosity=1
 # `bumpversion --tag release
 
 update_dist:
-	pytest
+	python -m pytest
 	rm dist/* -f
 	python setup.py sdist bdist_wheel
 
 check_dist: update_dist
-	twine check dist/*
+	python -m twine check dist/*
 
 upload_test: check_dist
-	twine upload --repository testpypi dist/*
+	python -m twine upload --repository testpypi dist/*
 
 upload: check_dist
-	twine upload dist/*
+	python -m twine upload dist/*
