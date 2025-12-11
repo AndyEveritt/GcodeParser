@@ -1,7 +1,7 @@
 import argparse
 import os
-from gcodeparser import GcodeParser
 
+from gcodeparser import GcodeParser
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
