@@ -1,6 +1,6 @@
 # GcodeParser
 
-A simple gcode parser that takes a string of text and returns a list where each gcode command is seperated into a python object.
+A simple gcode parser that can be used to parse a gcode file into python `GcodeLine` objects.
 
 The structure of the python object is:
 
@@ -11,10 +11,12 @@ GcodeLine(
   command = ('G', 1),
   params = {'X': 10, 'Y': -2.5},
   comment = 'this is a comment',
+  line_index = 0,
+  type = Commands.MOVE # Commands.MOVE, Commands.COMMENT, Commands.OTHER, Commands.TOOLCHANGE
 )
 ```
 
-# Install
+## Install
 
 ```
 pip install gcodeparser
@@ -26,50 +28,24 @@ Alternatively:
 pip install -e "git+https://github.com/AndyEveritt/GcodeParser.git@master#egg=gcodeparser"
 ```
 
-# Usage
+## Usage
 
 ```python
-from gcodeparser import GcodeParser
+from gcodeparser import parse_gcode_lines
 
-# open gcode file and store contents as variable
+# Recommended: iterate over lines in a file
+with open('my_gcode.gcode', 'r') as f: # note that file should be open during iteration
+    for line in parse_gcode_lines(f, include_comments=False):
+        print(line)
+
+# Alternative: open gcode file and parse lines into a list without iteration
 with open('my_gcode.gcode', 'r') as f:
-  gcode = f.read()
+    lines = list(parse_gcode_lines(f, include_comments=False))
 
-GcodeParser(gcode).lines    # get parsed gcode lines
-```
-
-## Include Comments
-
-`GcodeParser` takes a second argument called `include_comments` which defaults to `False`. If this is set to `True` then any line from the gcode file which only contains a comment will also be included in the output.
-
-```py
-gcode = (
-  'G1 X1 ; this comment is always included\n',
-  '; this comment will only be included if `include_comments=True`',
-)
-
-GcodeParser(gcode, include_comments=True).lines
-```
-
-If `include_comments` is `True` then the comment line will be in the form of:
-
-```python
-GcodeLine(
-  command = (';', None),
-  params = {},
-  comment = 'this comment will only be included if `include_comments=True`',
-)
-```
-
-## Converting a File
-
-```python
-from gcodeparser import GcodeParser
-
-with open('3DBenchy.gcode', 'r') as f:
+# Also, we can convert string to parsed lines
+with open('my_gcode.gcode', 'r') as f:
     gcode = f.read()
-parsed_gcode = GcodeParser(gcode)
-parsed_gcode.lines
+lines = list(parse_gcode_lines(gcode, include_comments=False))
 ```
 
 _output:_
@@ -96,21 +72,38 @@ _output:_
 ]
 ```
 
-## Convert Command Tuple to String
+### Include Comments
 
-The `GcodeLine`class has a property `command_str` which will return the command tuple as a string. ie `('G', 91)` -> `"G91"`.
+`parse_gcode_lines()` takes a second argument called `include_comments` which defaults to `False`. If this is set to `True` then any line from the gcode file which only contains a comment will also be included in the output.
 
-## Changing back to Gcode String
+```python
+from gcodeparser import parse_gcode_lines
+
+gcode = """G1 X1 ; this comment is always included
+; this comment will only be included if `include_comments=True`"""
+
+lines = list(parse_gcode_lines(gcode, include_comments=True))
+```
+
+If `include_comments` is `True` then the comment line will be in the form of:
+
+```python
+GcodeLine(
+  command = (';', None),
+  params = {},
+  comment = 'this comment will only be included if `include_comments=True`',
+)
+```
+
+### Convert Command Tuple to String
+
+The `GcodeLine` class has a property `command_str` which will return the command tuple as a string. ie `('G', 91)` -> `"G91"`.
+
+### Changing back to Gcode String
 
 The `GcodeLine` class has a property `gcode_str` which will return the equivalent gcode string.
 
 > This was called `to_gcode()` in version 0.0.6 and before.
-
-## Parameters
-
-The `GcodeLine` class has a several helper methods to get and manipulate gcode parameters.
-
-For an example `GcodeLine` `line`:
 
 ### Retrieving Params
 
@@ -140,6 +133,15 @@ To delete a param, use the method `delete_param(param: str)`
 line.delete_param('X')
 ```
 
-## Converting to DataFrames
+### Converting to DataFrames
 
-If for whatever reason you want to convert your list of `GcodeLine` objects into a pandas dataframe, simply use `pd.DataFrame(GcodeParser(gcode).lines)`
+If for whatever reason you want to convert your list of `GcodeLine` objects into a pandas dataframe:
+
+```python
+from gcodeparser import parse_gcode_lines
+import pandas as pd
+
+with open('my_gcode.gcode', 'r') as f:
+    lines = list(parse_gcode_lines(f))
+df = pd.DataFrame(lines)
+```

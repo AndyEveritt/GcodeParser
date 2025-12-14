@@ -1,5 +1,6 @@
-from setuptools import find_packages, setup
 import pathlib
+
+from setuptools import find_packages, setup
 
 # The directory containing this file
 HERE = pathlib.Path(__file__).parent
@@ -9,13 +10,10 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="gcodeparser",
-    version="0.2.4",
+    version="0.3.0",
     include_package_data=True,
     packages=find_packages(),
-
-    install_requires=[
-    ],
-
+    install_requires=[],
     author="Andy Everitt",
     author_email="andreweveritt@e3d-online.com",
     description="Python gcode parser",
