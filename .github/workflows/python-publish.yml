@@ -9,8 +9,9 @@
 name: Upload Python Package
 
 on:
-  release:
-    types: [published]
+  push:
+    tags:
+      - "[0-9]+.[0-9]+.[0-9]+"
 
 permissions:
   contents: write
@@ -34,23 +35,33 @@ jobs:
     - name: Test code
       run: pytest
     - name: Bumpversion
-      run: bumpversion --new-version=${{ github.event.release.tag_name }} minor
+      run: bumpversion --new-version=${{ github.ref_name }} minor
+    - name: Fail if bumpversion changed files
+      run: |
+        if [ -n "$(git status --porcelain)" ]; then
+          echo "bumpversion modified files; failing the job."
+          git status --porcelain
+          exit 1
+        else
+          echo "No changes after bumpversion."
+        fi
     - name: Clean dist/
       run: rm dist/* -f
     - name: Build package
       run: python setup.py sdist bdist_wheel
     - name: Check package
       run: python -m twine check dist/*
-    - name: Commit version change
-      run: |
-          git config --global user.name 'Github Actions'
-          git config --global user.email '38423143+AndyEveritt@users.noreply.github.com'
-          git commit -am "Release ${{ github.event.release.name }}"
-          git tag -f ${{ github.event.release.tag_name }}
-          git push origin HEAD:master
-          git push origin -f --tags
     - name: Publish package
       uses: pypa/gh-action-pypi-publish@0ab0b79471669eb3a4d647e625009c62f9f3b241
       with:
         user: __token__
         password: ${{ secrets.PYPI_API_TOKEN }}
+    - name: Create GitHub Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref_name }}
+        release_name: ${{ github.ref_name }}
+        draft: false
+        prerelease: false
