@@ -1,67 +1,87 @@
-# This workflow will upload a Python Package using Twine when a release is created
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python#publishing-to-package-registries
-
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-
-name: Upload Python Package
+name: Publish to PyPI
 
 on:
   push:
     tags:
-      - "[0-9]+.[0-9]+.[0-9]+"
+      - '[0-9]+\.[0-9]+\.[0-9+]+'
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  deploy:
-
+  test:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
 
     steps:
     - uses: actions/checkout@v4
-    - name: Set up Python
+    - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
       with:
-        python-version: '3.x'
+        python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install setuptools
-        pip install -r requirements.txt
-    - name: Test code
-      run: pytest
-    - name: Bumpversion
-      run: bumpversion --new-version=${{ github.ref_name }} minor
-    - name: Fail if bumpversion changed files
+        python -m pip install flake8 pytest
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    - name: Lint with flake8
       run: |
-        if [ -n "$(git status --porcelain)" ]; then
-          echo "bumpversion modified files; failing the job."
-          git status --porcelain
-          exit 1
-        else
-          echo "No changes after bumpversion."
-        fi
-    - name: Clean dist/
-      run: rm dist/* -f
-    - name: Build package
-      run: python setup.py sdist bdist_wheel
-    - name: Check package
-      run: python -m twine check dist/*
-    - name: Publish package
-      uses: pypa/gh-action-pypi-publish@0ab0b79471669eb3a4d647e625009c62f9f3b241
-      with:
-        user: __token__
-        password: ${{ secrets.PYPI_API_TOKEN }}
-    - name: Create GitHub Release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ github.ref_name }}
-        release_name: ${{ github.ref_name }}
-        draft: false
-        prerelease: false
+        # stop the build if there are Python syntax errors or undefined names
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    - name: Test with pytest
+      run: |
+        pytest
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install build tools
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install build
+
+      - name: Verify tag matches package version
+        run: |
+          python - << 'PY'
+          import re, pathlib
+          init = pathlib.Path('gcodeparser/__init__.py').read_text(encoding='utf-8')
+          m = re.search(r"__version__\s*=\s*['\"]([^'\"]+)['\"]", init)
+          if not m:
+              raise SystemExit('Version not found in gcodeparser/__init__.py')
+          pkg_version = m.group(1)
+          tag = '${{ github.ref_name }}'
+          if pkg_version != tag:
+              raise SystemExit(f'Tag ({tag}) does not match package version ({pkg_version})')
+          print(f'Version check passed: {pkg_version}')
+          PY
+
+      - name: Build distributions
+        run: python -m build
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_API_TOKEN }}
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: ${{ github.ref_name }}
+          draft: false
+          prerelease: false
