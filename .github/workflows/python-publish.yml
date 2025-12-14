@@ -4,9 +4,10 @@ on:
   push:
     tags:
       - '*'
-
+  
+# Allow the workflow to create releases
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   test:
